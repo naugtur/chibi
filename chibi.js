@@ -236,7 +236,20 @@ You should have received a copy of the GNU General Public License along with thi
 
 	function chibi(selector) {
 
-		var nodes = getNodes(selector);
+		var nodes = getNodes(selector),
+            eventHandler = function(event,fn,clear) {
+
+    			(selector === w || selector === d)? nodes = [selector]: 0;
+
+				nodeLoop(function(elm) {
+					if (d.addEventListener) {
+						(clear)? elm.removeEventListener(event, fn, false): elm.addEventListener(event, fn, false);
+					}
+					else if (d.attachEvent) {
+						(clear)? elm.detachEvent('on'+event, fn): elm.attachEvent('on'+event, fn);
+					}
+				},nodes);
+			},
 
 		// Public functions
 		return {
@@ -579,19 +592,10 @@ You should have received a copy of the GNU General Public License along with thi
 				}
 			},
 			// Event handler
-			on: function(event,fn,clear) {
-
-				(selector === w || selector === d)? nodes = [selector]: 0;
-
-				nodeLoop(function(elm) {
-					if (d.addEventListener) {
-						(clear)? elm.removeEventListener(event, fn, false): elm.addEventListener(event, fn, false);
-					}
-					else if (d.attachEvent) {
-						(clear)? elm.detachEvent('on'+event, fn): elm.attachEvent('on'+event, fn);
-					}
-				},nodes);
-			},
+			on: eventHandler,
+            off: function(event,fn) {
+                eventHandler(event,fn,true);
+            },
 			// Basic XHR 1, no file support. Shakes fist at IE
 			ajax: function(url, method, callback, nocache) {
 				var xhr,
